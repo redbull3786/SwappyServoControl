@@ -22,19 +22,21 @@
 #define DATA_PIN_SERVO_8 9
 
 // Commands:
-#define READY_REPLY         0x00
-#define CHANGE_ANGLE        0x10
-#define CALIBRATE_DEVICE    0x11
+#define READY_REPLY                   0x00
+#define CHANGE_ANGLE_AND_SPEED        0x10
+#define CALIBRATE_DEVICE              0x11
 
 // Devices:
-#define SERVO_1   0x00
-#define SERVO_2   0x01
-#define SERVO_3   0x02
-#define SERVO_4   0x03
-#define SERVO_5   0x04
-#define SERVO_6   0x05
-#define SERVO_7   0x06
-#define SERVO_8   0x07
+#define UNKNOWN   0x00
+#define SERVO_1   0x01
+#define SERVO_2   0x02
+#define SERVO_3   0x03
+#define SERVO_4   0x04
+#define SERVO_5   0x05
+#define SERVO_6   0x06
+#define SERVO_7   0x07
+#define SERVO_8   0x08
+#define ALL       0x09
 
 // ReturnStates:
 #define RETURN_SUCCESS  0x01
@@ -104,10 +106,13 @@ ISR (SPI_STC_vect)
   }
 }
 
-void rotateServo(Servo& servo, int degree)
+void rotateServo(Servo& servo, int angle, int speed)
 {
-  servo.write(degree);
-  delay(1000);
+  for(int pos = 0; pos < angle; pos++)
+  {
+    servo.write(pos);
+    delay(15);
+  }
 }
 
 Servo& getServo(byte device)
@@ -169,19 +174,20 @@ void processSpiCommand()
       memset(spi_send_buffer, 0, sizeof(spi_send_buffer));
       break;      
     }
-    case CHANGE_ANGLE:
+    case CHANGE_ANGLE_AND_SPEED:
     {
-      int degree = spi_receive_buffer[2];
+      int angle = spi_receive_buffer[2];
+      int speed = spi_receive_buffer[3];
 
-      rotateServo(getServo(device), degree);
-      spi_receive_buffer[0] = RETURN_SUCCESS;
-      spi_receive_buffer[1] = device;
+      rotateServo(getServo(device), angle, speed);
+      spi_send_buffer[0] = RETURN_SUCCESS;
+      spi_send_buffer[1] = device;
       break;      
     }
     case CALIBRATE_DEVICE:
     {
-      spi_receive_buffer[0] = RETURN_SUCCESS;
-      spi_receive_buffer[1] = device;
+      spi_send_buffer[0] = RETURN_SUCCESS;
+      spi_send_buffer[1] = device;
       break;      
     }
     default:
