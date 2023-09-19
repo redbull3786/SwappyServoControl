@@ -179,7 +179,7 @@ void processSpiCommand()
     case CHANGE_ANGLE_AND_SPEED:
     {
       int angle = spi_receive_buffer[2];
-      int speed = spi_receive_buffer[3];
+      int speed = spi_receive_buffer[3] | (spi_receive_buffer[4] << 8);
 
       rotateServo(getServo(device), angle, speed);
       spi_send_buffer[0] = RETURN_SUCCESS;
