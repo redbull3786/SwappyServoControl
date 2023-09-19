@@ -108,10 +108,12 @@ ISR (SPI_STC_vect)
 
 void rotateServo(Servo& servo, int angle, int speed)
 {
+  int delayStep = round(speed / angle);
+
   for(int pos = 0; pos < angle; pos++)
   {
     servo.write(pos);
-    delay(15);
+    delay(delayStep);
   }
 }
 
